@@ -53,6 +53,7 @@ TMVA::Node::Node()
    : fParent( NULL ),
      fLeft  ( NULL),
      fRight ( NULL ),
+     fMissing ( NULL ),
      fPos   ( 'u' ),
      fDepth ( 0 ),
      fParentTree( NULL )
@@ -65,7 +66,8 @@ TMVA::Node::Node()
 TMVA::Node::Node( Node* p, char pos ) 
    : fParent ( p ), 
      fLeft ( NULL ), 
-     fRight( NULL ),  
+     fRight( NULL ),
+     fMissing( NULL ),
      fPos  ( pos ), 
      fDepth( p->GetDepth() + 1), 
      fParentTree(p->GetParentTree()) 
@@ -75,13 +77,15 @@ TMVA::Node::Node( Node* p, char pos )
    fgCount++;
    if (fPos == 'l' ) p->SetLeft(this);
    else if (fPos == 'r' ) p->SetRight(this);
+   else if (fPos == 'm' ) p->SetMissing(this);
 }
 
 //_______________________________________________________________________
 TMVA::Node::Node ( const Node &n ) 
    : fParent( NULL ), 
      fLeft  ( NULL), 
-     fRight ( NULL ), 
+     fRight ( NULL ),
+     fMissing ( NULL ),
      fPos   ( n.fPos ), 
      fDepth ( n.fDepth ), 
      fParentTree( NULL )
@@ -112,9 +116,11 @@ Int_t TMVA::Node::CountMeAndAllDaughters() const
    //recursively go through the part of the tree below this node and count all daughters
    Int_t n=1;
    if (this->GetLeft() != NULL) 
-      n+= this->GetLeft()->CountMeAndAllDaughters(); 
+     n+= this->GetLeft()->CountMeAndAllDaughters(); 
    if (this->GetRight() != NULL) 
-      n+= this->GetRight()->CountMeAndAllDaughters(); 
+     n+= this->GetRight()->CountMeAndAllDaughters();
+   if (this->GetMissing() != NULL)
+     n+= this->GetMissing()->CountMeAndAllDaughters();
   
    return n;
 }
@@ -148,6 +154,7 @@ void* TMVA::Node::AddXMLTo( void* parent ) const
    this->AddAttributesToNode(node);
    if (this->GetLeft())  this->GetLeft()->AddXMLTo(node);
    if (this->GetRight()) this->GetRight()->AddXMLTo(node);
+   if (this->GetMissing()) this->GetMissing()->AddXMLTo(node);
    return node;
 }
 
@@ -170,8 +177,9 @@ void TMVA::Node::ReadXML( void* node,  UInt_t tmva_Version_Code )
       n->ReadXML(ch, tmva_Version_Code);
       if (n->GetPos()=='l')     { this->SetLeft(n);  }
       else if(n->GetPos()=='r') { this->SetRight(n); }
+      else if(n->GetPos()=='m') { this->SetMissing(n); }
       else { 
-	 std::cout << "neither left nor right" << std::endl;
+	 std::cout << "neither left nor right nor missing" << std::endl;
       }
       ch = gTools().GetNextChild(ch);
    }

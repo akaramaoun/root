@@ -198,14 +198,16 @@ TMVA::VariableInfo& TMVA::DataSetInfo::AddVariable( const TString& expression,
                                                     Double_t min, Double_t max,
                                                     char varType,
                                                     Bool_t normalized,
+						    TString missingValuesStr,
                                                     void* external )
 {
    // add a variable (can be a complex expression) to the set of
    // variables used in the MV analysis
    TString regexpr = expression; // remove possible blanks
    regexpr.ReplaceAll(" ", "" );
+   TObjArray * missingValues = missingValuesStr.Tokenize(" ");
    fVariables.push_back(VariableInfo( regexpr, title, unit,
-                                      fVariables.size()+1, varType, external, min, max, normalized ));
+                                      fVariables.size()+1, varType, external, min, max, normalized, missingValues ));
    fNeedsRebuilding = kTRUE;
    return fVariables.back();
 }

@@ -103,6 +103,7 @@ namespace TMVA {
 
       Node* GetLeftDaughter ( Node* n);    
       Node* GetRightDaughter( Node* n);
+      Node* GetMissingDaughter( Node* n);
 
       virtual void Print( std::ostream& os ) const;
       virtual void Read ( std::istream& istr, UInt_t tmva_Version_Code = TMVA_VERSION_CODE );

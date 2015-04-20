@@ -83,6 +83,7 @@ namespace TMVA {
       void           ReadFromXML   ( void* varnode );
       void           AddToXML      ( void* varnode );
       void*          GetExternalLink() const { return fExternalData; }
+      TObjArray * GetMissingValues() const { return fMissingValues; }
 
       // assignment operator (does not copy external link)
       VariableInfo&  operator=(const TMVA::VariableInfo& rhs);
@@ -96,6 +97,7 @@ namespace TMVA {
       void           SetUnit           ( const TString& s ) { fUnit  = s; }
       void           SetInternalVarName( const TString& s ) { fInternalName = s; }
       void           SetVarType        ( char c )           { fVarType = c; }
+      void SetMissingValues (TObjArray * missingValues) { fMissingValues = missingValues; }
 
       TString  fExpression;      //! original variable expression (can be a formula)
       TString  fInternalName;    //! internal variable name (needs to be regular expression)
@@ -111,6 +113,7 @@ namespace TMVA {
       void*    fExternalData;    //! if the variable content is linked to an external pointer      
       TString  fExternalDataType;//! type of external variable (int, long, double, float) - to be done JS
       Int_t    fVarCounter;      //! dummy variable
+      TObjArray * fMissingValues;
    };
 
 }

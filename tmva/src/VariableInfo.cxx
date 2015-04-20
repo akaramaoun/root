@@ -38,7 +38,7 @@
 TMVA::VariableInfo::VariableInfo( const TString& expression, const TString& title, const TString& unit,
                                   Int_t varCounter,
                                   char varType, void* external,
-                                  Double_t min, Double_t max, Bool_t normalized )
+                                  Double_t min, Double_t max, Bool_t normalized, TObjArray * missingValues )
    : fExpression  ( expression ),
      fTitle       ( title ),
      fUnit        ( unit ),
@@ -47,7 +47,8 @@ TMVA::VariableInfo::VariableInfo( const TString& expression, const TString& titl
      fXrmsNorm    ( 0 ),
      fNormalized  ( normalized ),
      fExternalData( external ),
-     fVarCounter  ( varCounter )
+     fVarCounter  ( varCounter ),
+     fMissingValues ( missingValues )
 {
    // constructor
 
@@ -81,7 +82,8 @@ TMVA::VariableInfo::VariableInfo()
      fXrmsNorm    ( 0 ),
      fNormalized  ( kFALSE ),
      fExternalData( 0 ),
-     fVarCounter  ( 0 )
+     fVarCounter  ( 0 ),
+     fMissingValues ( 0 )
 {
    // default constructor
    fXminNorm     =  1e30;
@@ -106,7 +108,8 @@ TMVA::VariableInfo::VariableInfo( const VariableInfo& other )
      fXrmsNorm    ( other.fXrmsNorm ),
      fNormalized  ( other.fNormalized ),
      fExternalData( other.fExternalData ),
-     fVarCounter  ( other.fVarCounter )
+     fVarCounter  ( other.fVarCounter ),
+     fMissingValues ( other.fMissingValues )
 {
    // copy constructor
 }
@@ -185,6 +188,18 @@ void TMVA::VariableInfo::AddToXML( void* varnode )
    gTools().AddAttr( varnode, "Type", typeStr );
    gTools().AddAttr( varnode, "Min", gTools().StringFromDouble(GetMin()) );
    gTools().AddAttr( varnode, "Max", gTools().StringFromDouble(GetMax()) );
+
+   TObjArray * missingValues = GetMissingValues();
+   TString missingValuesStr = "";
+   Int_t nMissingValues = missingValues.GetEntriesFast();
+   if (nMissingValues > 0) {
+     missingValuesStr = (missingValues->At(0)).GetString();
+     for (Int_t i=1; i<nMissingValues; i++) {
+       missingValuesStr += " ";
+       missingValuesStr += (missingValues->At(i)).GetString();;
+     }
+   }
+   gTools().AddAttr( varnode, "MissingValues", missingValuesStr);
 }
 
 //_______________________________________________________________________
@@ -200,6 +215,7 @@ void TMVA::VariableInfo::ReadFromXML( void* varnode )
    gTools().ReadAttr( varnode, "Type",       type );
    gTools().ReadAttr( varnode, "Min",        fXminNorm );
    gTools().ReadAttr( varnode, "Max",        fXmaxNorm );
+   gTools().ReadAttr( varnode, "MissingValues", fMissingValues ); //check
 
    SetVarType(type[0]);
 }

@@ -120,6 +120,9 @@ TMVA::DecisionTreeNode::DecisionTreeNode(const TMVA::DecisionTreeNode &n,
    if (n.GetRight() == 0 ) this->SetRight(NULL);
    else this->SetRight( new DecisionTreeNode( *((DecisionTreeNode*)(n.GetRight())),this));
 
+   if (n.GetMissing() == 0 ) this->SetMissing(NULL);
+   else this->SetMissing( new DecisionTreeNode( *((DecisionTreeNode*)(n.GetMissing())),this));
+
    if (DecisionTreeNode::fgIsTraining){
       fTrainInfo = new DTNodeTrainingInfo(*(n.fTrainInfo));
       //std::cout << "Node constructor with TrainingINFO"<<std::endl;
@@ -164,8 +167,21 @@ Bool_t TMVA::DecisionTreeNode::GoesRight(const TMVA::Event & e) const
 Bool_t TMVA::DecisionTreeNode::GoesLeft(const TMVA::Event & e) const
 {
    // test event if it decends the tree at this node to the left
-   if (!this->GoesRight(e)) return kTRUE;
+  if (!this->GoesRight(e) && !this->GoesMissing(e)) return kTRUE;
    else return kFALSE;
+}
+
+//_______________________________________________________________________
+Bool_t TMVA::DecisionTreeNode::GoesMissing(const TMVA::Event & e) const
+{
+  Bool_t result;
+  if (GetNFisherCoeff() == 0){
+    result = (e.GetValue(this->GetSelector()) == this->GetMissingValue() );
+  }
+  else {
+    result = kFALSE;
+  }
+  return result;
 }
 
 
@@ -215,6 +231,7 @@ void TMVA::DecisionTreeNode::Print(std::ostream& os) const
    if (this->GetParent() != NULL) os << " parent at addr: "         << long(this->GetParent()) ;
    if (this->GetLeft()   != NULL) os << " left daughter at addr: "  << long(this->GetLeft());
    if (this->GetRight()  != NULL) os << " right daughter at addr: " << long(this->GetRight()) ;
+   if (this->GetMissing() != NULL) os << " missing daughter at addr: " << long(this->GetMissing()) ;
 
    os << " **** > " << std::endl;
 }
@@ -248,6 +265,7 @@ void TMVA::DecisionTreeNode::PrintRec(std::ostream& os) const
 
    if (this->GetLeft()  != NULL) this->GetLeft() ->PrintRec(os);
    if (this->GetRight() != NULL) this->GetRight()->PrintRec(os);
+   if (this->GetMissing() != NULL) this->GetMissing()->PrintRec(os);
 }
 
 //_______________________________________________________________________
@@ -339,6 +357,7 @@ void TMVA::DecisionTreeNode::ClearNodeAndAllDaughters()
 
    if (this->GetLeft()  != NULL) ((DecisionTreeNode*)(this->GetLeft()))->ClearNodeAndAllDaughters();
    if (this->GetRight() != NULL) ((DecisionTreeNode*)(this->GetRight()))->ClearNodeAndAllDaughters();
+   if (this->GetMissing() != NULL) ((DecisionTreeNode*)(this->GetMissing()))->ClearNodeAndAllDaughters();
 }
 
 //_______________________________________________________________________
@@ -350,9 +369,10 @@ void TMVA::DecisionTreeNode::ResetValidationData( ) {
    SetSumTarget( 0 );
    SetSumTarget2( 0 );
 
-   if(GetLeft() != NULL && GetRight() != NULL) {
+   if(GetLeft() != NULL && GetRight() != NULL && GetMissing() != NULL) {
       GetLeft()->ResetValidationData();
       GetRight()->ResetValidationData();
+      GetMissing()->ResetValidationData();
    }
 }
 
@@ -373,9 +393,10 @@ void TMVA::DecisionTreeNode::PrintRecPrune( std::ostream& os ) const {
    // recursive printout of the node and its daughters
 
    this->PrintPrune(os);
-   if(this->GetLeft() != NULL && this->GetRight() != NULL) {
+   if(this->GetLeft() != NULL && this->GetRight() != NULL && this->GetMissing() != NULL) {
       ((DecisionTreeNode*)this->GetLeft())->PrintRecPrune(os);
       ((DecisionTreeNode*)this->GetRight())->PrintRecPrune(os);
+      ((DecisionTreeNode*)this->GetMissing())->PrintRecPrune(os);
    }
 }
 
@@ -508,6 +529,10 @@ void TMVA::DecisionTreeNode::ReadContent( std::stringstream& /*s*/ )
 }
 //_______________________________________________________________________
 TMVA::MsgLogger& TMVA::DecisionTreeNode::Log() {
-  TTHREAD_TLS_DECL_ARG(MsgLogger,logger,"DecisionTreeNode");    // static because there is a huge number of nodes...
+#if __cplusplus > 199711L
+  thread_local MsgLogger logger("DecisionTreeNode");    // static because there is a huge number of nodes...
+#else
+  static MsgLogger logger("DecisionTreeNode");    // static because there is a huge number of nodes...
+#endif
   return logger;
 }

@@ -93,7 +93,7 @@ namespace TMVA {
       // ---
       VariableInfo&     AddVariable( const TString& expression, const TString& title = "", const TString& unit = "", 
                                      Double_t min = 0, Double_t max = 0, char varType='F', 
-                                     Bool_t normalized = kTRUE, void* external = 0 );
+                                     Bool_t normalized = kTRUE, TString missingValuesStr = 0, void* external = 0 );
       VariableInfo&     AddVariable( const VariableInfo& varInfo );
 
       VariableInfo&     AddTarget  ( const TString& expression, const TString& title, const TString& unit, 

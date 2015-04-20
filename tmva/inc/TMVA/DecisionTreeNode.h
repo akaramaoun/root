@@ -147,6 +147,8 @@ namespace TMVA {
       // test event if it decends the tree at this node to the left
       virtual Bool_t GoesLeft ( const Event & ) const;
 
+      virtual Bool_t GoesMissing ( const Event & ) const;
+      
       // set index of variable used for discrimination at this node
       void SetSelector( Short_t i) { fSelector = i; }
       // return index of variable used for discrimination at this node
@@ -156,6 +158,10 @@ namespace TMVA {
       void  SetCutValue ( Float_t c ) { fCutValue  = c; }
       // return the cut value applied at this node
       Float_t GetCutValue ( void ) const { return fCutValue;  }
+
+      void  SetMissingValue ( Float_t c ) { fMissingValue  = c; }
+      
+      Float_t GetMissingValue ( void ) const { return fMissingValue;  }
 
       // set true: if event variable > cutValue ==> signal , false otherwise
       void SetCutType( Bool_t t   ) { fCutType = t; }
@@ -284,11 +290,13 @@ namespace TMVA {
       // return pointer to the left/right daughter or parent node
       inline virtual DecisionTreeNode* GetLeft( )   const { return dynamic_cast<DecisionTreeNode*>(fLeft); }
       inline virtual DecisionTreeNode* GetRight( )  const { return dynamic_cast<DecisionTreeNode*>(fRight); }
+      inline virtual DecisionTreeNode* GetMissing( )  const { return dynamic_cast<DecisionTreeNode*>(fMissing); }
       inline virtual DecisionTreeNode* GetParent( ) const { return dynamic_cast<DecisionTreeNode*>(fParent); }
 
       // set pointer to the left/right daughter and parent node
       inline virtual void SetLeft  (Node* l) { fLeft   = dynamic_cast<DecisionTreeNode*>(l);} 
-      inline virtual void SetRight (Node* r) { fRight  = dynamic_cast<DecisionTreeNode*>(r);} 
+      inline virtual void SetRight (Node* r) { fRight  = dynamic_cast<DecisionTreeNode*>(r);}
+      inline virtual void SetMissing (Node* m) { fRight  = dynamic_cast<DecisionTreeNode*>(m);}
       inline virtual void SetParent(Node* p) { fParent = dynamic_cast<DecisionTreeNode*>(p);} 
 
 

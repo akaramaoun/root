@@ -70,6 +70,7 @@ void TMVA::BinaryTree::DeleteNode( TMVA::Node* node )
    if (node != NULL) { //If the node is not NULL...
       this->DeleteNode(node->GetLeft());  //Delete its left node.
       this->DeleteNode(node->GetRight()); //Delete its right node.
+      this->DeleteNode(node->GetMissing());
 
       delete node;                // Delete the node in memory
    }
@@ -90,6 +91,12 @@ TMVA::Node* TMVA::BinaryTree::GetRightDaughter( Node *n)
 }
 
 //_______________________________________________________________________
+TMVA::Node* TMVA::BinaryTree::GetMissingDaughter( Node *n)
+{
+  return (Node*) n->GetMissing();
+}
+
+//_______________________________________________________________________
 UInt_t TMVA::BinaryTree::CountNodes(TMVA::Node *n)
 {
    // return the number of nodes in the tree. (make a new count --> takes time)
@@ -106,6 +113,9 @@ UInt_t TMVA::BinaryTree::CountNodes(TMVA::Node *n)
    }
    if (this->GetRightDaughter(n) != NULL) {
       countNodes += this->CountNodes( this->GetRightDaughter(n) );
+   }
+   if (this->GetMissingDaughter(n) != NULL) {
+     countNodes += this->CountNodes( this->GetMissingDaughter(n) );
    }
 
    return fNNodes = countNodes;
@@ -180,6 +190,7 @@ void TMVA::BinaryTree::Read(std::istream & istr, UInt_t tmva_Version_Code )
          currentNode->SetParent(parent);
          if (currentNode->GetPos()=='l') parent->SetLeft(currentNode);
          if (currentNode->GetPos()=='r') parent->SetRight(currentNode);
+	 if (currentNode->GetPos()=='r') parent->SetMissing(currentNode);
       }
 
       parent = currentNode; // latest node read might be parent of new one
@@ -214,6 +225,9 @@ void TMVA::BinaryTree::SetTotalTreeDepth( Node *n)
    if (this->GetRightDaughter(n) != NULL) {
       this->SetTotalTreeDepth( this->GetRightDaughter(n) );
    }
+   if (this->GetMissingDaughter(n) != NULL) {
+     this->SetTotalTreeDepth( this->GetMissingDaughter(n) );
+   }
    if (n->GetDepth() > this->GetTotalTreeDepth()) this->SetTotalTreeDepth(n->GetDepth());
 
    return;
@@ -221,6 +235,10 @@ void TMVA::BinaryTree::SetTotalTreeDepth( Node *n)
 
 //_______________________________________________________________________
 TMVA::MsgLogger& TMVA::BinaryTree::Log() const {
-  TTHREAD_TLS_DECL_ARG(MsgLogger,logger,"BinaryTree");
+#if __cplusplus > 199711L
+  thread_local MsgLogger logger("BinaryTree");
+#else
+  static MsgLogger logger("BinaryTree");
+#endif
   return logger;
 }
